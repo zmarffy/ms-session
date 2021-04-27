@@ -1,13 +1,13 @@
-# `ms-login`
+# `ms-session`
 
-`ms-login` is a tiny Python library that provides a way to log in to your Microsoft account programatically in a `requests` `Session`. It is widely unknown why you would ever want to use this, but that's for you to determine.
+`ms-session` is a tiny Python library that provides a way to log in to your Microsoft account programatically in a `requests` `Session`. It is widely unknown why you would ever want to use this, but that's for you to determine.
 
 ## Usage
 
 The usage is incredibly simple and straightforward. Just create a new `MSSession` object and pass it your creds.
 
 ```python
-from ms_login import MSSession
+from ms_session import MSSession
 
 session = MSSession("someone@example.com", "password")
 ```

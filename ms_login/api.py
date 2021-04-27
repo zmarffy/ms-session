@@ -5,9 +5,12 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-from . import constants
-
 LOGGER = logging.getLogger(__name__)
+
+POST_URL_RE = 'urlPost:\\\'([A-Za-z0-9:\?_\-\.&/=]+)'
+PPFT_URL_RE = 'sFTTag:\\\'.*value="(.*)"/>'
+REQUIRED_LOGIN_POST_KEYS = ("pprid", "t", "NAP", "ANON")
+LOGIN_KEY = "https://login.live.com/"
 
 
 class MSSessionLoginError(Exception):
@@ -20,11 +23,11 @@ class MSSession(requests.Session):
         self._login(email, password)
 
     def _login(self, email: str, password: str) -> None:
-        next_url = constants.Url.LOGIN
+        next_url = LOGIN_KEY
         r = self.get(next_url)
 
-        next_url = re.search(constants.Regex.POST_URL, r.text).group(1)
-        ppft = re.search(constants.Regex.PPFT_URL, r.text).groups(1)[0]
+        next_url = re.search(POST_URL_RE, r.text).group(1)
+        ppft = re.search(PPFT_URL_RE, r.text).groups(1)[0]
         # This is a thing for some reason
         ppsx = "Passport"[0:random.randrange(9)]
         # Make it super realistic
@@ -75,7 +78,7 @@ class MSSession(requests.Session):
             raise MSSessionLoginError(None, "Incorrect creds")
         next_url = next_url.get("action")
         data = {}
-        for key in constants.Keys.REQUIRED_LOGIN_POST:
+        for key in REQUIRED_LOGIN_POST_KEYS:
             value = s.find(id=key)
             if value is None:
                 raise MSSessionLoginError(
