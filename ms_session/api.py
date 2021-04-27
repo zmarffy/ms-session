@@ -1,11 +1,8 @@
-import logging
 import random
 import re
 
 import requests
 from bs4 import BeautifulSoup
-
-LOGGER = logging.getLogger(__name__)
 
 POST_URL_RE = 'urlPost:\\\'([A-Za-z0-9:\?_\-\.&/=]+)'
 PPFT_URL_RE = 'sFTTag:\\\'.*value="(.*)"/>'
@@ -18,11 +15,28 @@ class MSSessionLoginError(Exception):
 
 
 class MSSession(requests.Session):
+
+    """Basically a `requests.Session` object that logs you into your Microsoft account
+
+    Args:
+        email (str): Account email
+        password (str): Account password
+    """
+
     def __init__(self, email: str, password: str) -> None:
         super().__init__()
         self._login(email, password)
 
     def _login(self, email: str, password: str) -> None:
+        """Log into your Microsoft account in the session
+
+        Args:
+            email (str): Account email
+            password (str): Account password
+
+        Raises:
+            MSSessionLoginError: If the login failed in some way
+        """
         next_url = LOGIN_KEY
         r = self.get(next_url)
 
@@ -66,7 +80,6 @@ class MSSession(requests.Session):
             "i19": time_spent
         }
         r = self.post(next_url, data=data, allow_redirects=True)
-        LOGGER.debug(f"POST to {next_url} response is: {r.text}")
         if "sErrTxt:'Your account or password is incorrect." in r.text:
             raise MSSessionLoginError(
                 None, f"Incorrect creds for {email}")
