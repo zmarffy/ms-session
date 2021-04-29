@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 POST_URL_RE = 'urlPost:\\\'([A-Za-z0-9:\?_\-\.&/=]+)'
 PPFT_URL_RE = 'sFTTag:\\\'.*value="(.*)"/>'
 REQUIRED_LOGIN_POST_KEYS = ("pprid", "t", "NAP", "ANON")
-LOGIN_KEY = "https://login.live.com/"
+LOGIN_URL = "https://login.live.com/"
 
 
 class MSSessionLoginError(Exception):
@@ -37,16 +37,17 @@ class MSSession(requests.Session):
         Raises:
             MSSessionLoginError: If the login failed in some way
         """
-        next_url = LOGIN_KEY
+        next_url = LOGIN_URL
         r = self.get(next_url)
 
+        # Retrieve the next URL specified by the login page
         next_url = re.search(POST_URL_RE, r.text).group(1)
+        # Get the special PPFT value which is required for the next POST
         ppft = re.search(PPFT_URL_RE, r.text).groups(1)[0]
-        # This is a thing for some reason
+        # This is a thing for some reason. Attach some substring of the word "Passport" onto the... uh... passport
         ppsx = "Passport"[0:random.randrange(9)]
-        # Make it super realistic
+        # Make it super realistic with some amount of time spent on the page
         time_spent = random.randrange(1000, 15000)
-
         data = {
             "i13": "0",
             "login": email,
@@ -81,16 +82,16 @@ class MSSession(requests.Session):
         }
         r = self.post(next_url, data=data, allow_redirects=True)
         if "sErrTxt:'Your account or password is incorrect." in r.text:
-            raise MSSessionLoginError(
-                None, f"Incorrect creds for {email}")
-
+            raise MSSessionLoginError(f"Incorrect creds for {email}")
         s = BeautifulSoup(r.text, "html.parser")
 
+        # The final POST required to log in
         next_url = s.find(id="fmHF")
         if next_url is None:
-            raise MSSessionLoginError(None, "Incorrect creds")
+            raise MSSessionLoginError("Incorrect creds")
         next_url = next_url.get("action")
         data = {}
+        # Collect the keys required for the post from the page source
         for key in REQUIRED_LOGIN_POST_KEYS:
             value = s.find(id=key)
             if value is None:
@@ -98,4 +99,5 @@ class MSSession(requests.Session):
                     f"{key} value missing from response. Possibly try to manually login to your account, and then try again")
             data[key] = value.get("value")
 
+        # Last POST to get your cookies!
         r = self.post(next_url, data=data, allow_redirects=True)
