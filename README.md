@@ -1,5 +1,7 @@
 # `ms-session`
 
+**WARNING**: This library as of (mid?)-2021 no longer works due to a change in the undocumented API it uses that I cannot figure out. I need help reverse-engineering login.live.com again. Please contact me if you would like to help.
+
 `ms-session` is a tiny Python library that provides a way to log in to your Microsoft account programatically in a `requests` `Session`. It is widely unknown why you would ever want to use this, but that's for you to determine. I just make the library.
 
 ## Usage

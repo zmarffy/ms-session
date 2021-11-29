@@ -85,10 +85,11 @@ class MSSession(requests.Session):
             raise MSSessionLoginError(f"Incorrect creds for {email}")
         s = BeautifulSoup(r.text, "html.parser")
 
-        # The final POST required to log in
+        # POST to get the T value
+        # WARNING! This is where the library no longer responds as expected. "fmHF" is no longer given back here
         next_url = s.find(id="fmHF")
         if next_url is None:
-            raise MSSessionLoginError("Incorrect creds")
+            raise MSSessionLoginError("fmHF key was missing from response")
         next_url = next_url.get("action")
         data = {}
         # Collect the keys required for the post from the page source
